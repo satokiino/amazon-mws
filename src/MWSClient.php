@@ -956,6 +956,18 @@ class MWSClient
             'FeedSubmissionId' => $FeedSubmissionId
         ]);
 
+        if (is_string($result)) {
+            $csv = Reader::createFromString($result);
+            $csv->setDelimiter("\t");
+            $headers = $csv->fetchOne();
+            $result = [];
+            foreach (mb_convert_encoding($csv->setOffset(1)->fetchAll(), "UTF-8", "Shift_JIS") as $i => $row) {
+                if(empty($row[1])) continue;
+                if($row[1] == '成功した件数' || $row[1] == '処理された件数' || $row[1] == 'SKU') continue;
+                $result[$row[1]] = $row[4];
+            }
+        }
+
         if (isset($result['Message']['ProcessingReport'])) {
             return $result['Message']['ProcessingReport'];
         } else {
